@@ -1,4 +1,4 @@
-package dev.pablo;
+package dev.pablo.model;
 // Java Program to Illustrate Creation of Simple POJO Class
 
 import java.time.LocalDate;
@@ -18,7 +18,7 @@ import jakarta.persistence.Table;
 public class Movie {
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.AUTO)
+	@GeneratedValue(strategy = GenerationType.SEQUENCE)
 	@Column(name = "id")
 	private int id;
 
