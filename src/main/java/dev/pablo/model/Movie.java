@@ -26,7 +26,7 @@ public class Movie {
 	private String name;
 
 	@Column(name = "rate")
-	private float  rate;
+	private float rate;
 
 	@Column(name = "language")
 	private String language;
@@ -40,9 +40,10 @@ public class Movie {
 	@Column(name = "watchDate")
 	private LocalDate watchDate;
 
-	public Movie(){}
+	public Movie() {
+	}
 
-	public Movie( String name, float rate, String language, String note, String type, LocalDate watchDate) {
+	public Movie(String name, float rate, String language, String note, String type, LocalDate watchDate) {
 		this.name = name;
 		this.rate = rate;
 		this.language = language;
@@ -51,7 +52,6 @@ public class Movie {
 		this.watchDate = watchDate;
 	}
 
-	
 	public Movie(int id, String name, float rate, String language, String note, String type, LocalDate watchDate) {
 		this.id = id;
 		this.name = name;
