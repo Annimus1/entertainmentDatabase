@@ -1,5 +1,7 @@
 package dev.pablo.view;
 
+import dev.pablo.model.Movie;
+import java.time.LocalDate;
 import javax.swing.JTable;
 import javax.swing.SwingConstants;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -7,9 +9,8 @@ import javax.swing.table.TableModel;
 
 public class VPrincipal extends javax.swing.JFrame {
 
-    /**
-     * Creates new form VPrincipal
-     */
+    VAddMovie addMovie; 
+    
     public VPrincipal() {
         setSize(500,700);
         setResizable(false);
@@ -55,7 +56,7 @@ public class VPrincipal extends javax.swing.JFrame {
 
         Title.setFont(new java.awt.Font("JetBrains Mono", 1, 24)); // NOI18N
         Title.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        Title.setText("Movie Database");
+        Title.setText("Entertainment Database");
 
         javax.swing.GroupLayout HeaderPanelLayout = new javax.swing.GroupLayout(HeaderPanel);
         HeaderPanel.setLayout(HeaderPanelLayout);
@@ -77,7 +78,7 @@ public class VPrincipal extends javax.swing.JFrame {
         MoviesList.setFont(new java.awt.Font("sansserif", 0, 14)); // NOI18N
         MoviesList.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {"1","test View", "Movie", "Spanish", "5.0", "Note", "16/12/2024"},
+                {"1","test View", "Movie", "Spanish", "5.0", "Note", "2005-11-12"},
 
             },
             new String [] {
@@ -115,6 +116,11 @@ public class VPrincipal extends javax.swing.JFrame {
         Editbtn.setText("Edit");
         Editbtn.setEnabled(false);
         Editbtn.setMargin(new java.awt.Insets(20, 20, 20, 20));
+        Editbtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                EditbtnActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout BottomPanelLayout = new javax.swing.GroupLayout(BottomPanel);
         BottomPanel.setLayout(BottomPanelLayout);
@@ -177,20 +183,58 @@ public class VPrincipal extends javax.swing.JFrame {
 
 //    MovieList on press a row 
     private void MoviesListMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_MoviesListMousePressed
-        int SelectedRow = MoviesList.getSelectedRow();
-        
-        
     // enable edit and delete btn
     Editbtn.setEnabled(true);
     Deletebtn.setEnabled(true);
     }//GEN-LAST:event_MoviesListMousePressed
 
     private void AddbtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_AddbtnActionPerformed
-        // TODO add your handling code here:
+        // Handle click
+        try{
+            this.addMovie = new VAddMovie(this, rootPaneCheckingEnabled);
+            this.addMovie.setLocationRelativeTo(this);
+            this.addMovie.setVisible(true);
+            this.addMovie.setAlwaysOnTop(true);
+        }
         
         // Clear selection from MovieList
+        finally{
         CleanSelected();
+        }
     }//GEN-LAST:event_AddbtnActionPerformed
+
+    private void EditbtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_EditbtnActionPerformed
+        //  get selected row        
+        int selectedRow = MoviesList.getSelectedRow(); 
+        // get watchDate        
+        String baseDate = MoviesList.getValueAt(selectedRow, 6).toString();
+        int year =  Integer.parseInt(baseDate.split("-")[0]);
+        int month =  Integer.parseInt(baseDate.split("-")[1]);
+        int day =  Integer.parseInt(baseDate.split("-")[2]);
+                
+        // create Movie       
+        Movie m = new Movie(Integer.parseInt(MoviesList.getValueAt(selectedRow, 0).toString()), 
+                            MoviesList.getValueAt(selectedRow, 1).toString(),
+                            Float.parseFloat(MoviesList.getValueAt(selectedRow, 4).toString()),
+                            MoviesList.getValueAt(selectedRow, 3).toString(),
+                            MoviesList.getValueAt(selectedRow, 5).toString(),
+                            MoviesList.getValueAt(selectedRow, 2).toString(),
+                            LocalDate.of(year, month, day)
+        );
+        
+        
+        try{
+            this.addMovie = new VAddMovie(this, rootPaneCheckingEnabled, m);
+            this.addMovie.setLocationRelativeTo(this);
+            this.addMovie.setVisible(true);
+            this.addMovie.setAlwaysOnTop(true);
+        }
+        
+        // Clear selection from MovieList
+        finally{
+        CleanSelected();
+        }
+    }//GEN-LAST:event_EditbtnActionPerformed
 
     private void CleanSelected(){
         MoviesList.clearSelection();
