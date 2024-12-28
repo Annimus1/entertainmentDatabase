@@ -1,7 +1,10 @@
 package dev.pablo.view;
 
 import dev.pablo.model.Movie;
+import dev.pablo.services.MovieService;
 import java.time.LocalDate;
+import java.util.List;
+import javax.swing.JOptionPane;
 import javax.swing.JTable;
 import javax.swing.SwingConstants;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -10,13 +13,26 @@ import javax.swing.table.TableModel;
 public class VPrincipal extends javax.swing.JFrame {
 
     VAddMovie addMovie; 
+    List<Movie> movieListData;
+    MovieService movieService;
     
     public VPrincipal() {
+        // Initialice service        
+        movieService = new MovieService();
+        
+        // Configure window        
         setSize(500,700);
         setResizable(false);
         
+        // Initialice components
         initComponents();
+        
+        // update table with database info
+        updateMovieList(this);
+        
+        // Disable edition of table component
         MoviesList.setDefaultEditor(Object.class, null);
+        // Center elements in table components
         setCellsAlignment(MoviesList, SwingConstants.CENTER);
     }
 
@@ -76,16 +92,6 @@ public class VPrincipal extends javax.swing.JFrame {
         );
 
         MoviesList.setFont(new java.awt.Font("sansserif", 0, 14)); // NOI18N
-        MoviesList.setModel(new javax.swing.table.DefaultTableModel(
-            new Object [][] {
-                {"1","test View", "Movie", "Spanish", "5.0", "Note", "2005-11-12"},
-
-            },
-            new String [] {
-                "ID", "name","type","language", "rate","note","watchDate"
-            }
-
-        ));
         MoviesList.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mousePressed(java.awt.event.MouseEvent evt) {
                 MoviesListMousePressed(evt);
@@ -178,7 +184,31 @@ public class VPrincipal extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void DeletebtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_DeletebtnActionPerformed
-        // TODO add your handling code here:
+        //  get selected row        
+        int selectedRow = MoviesList.getSelectedRow();
+        
+       // Get id from row
+       int id = Integer.parseInt(MoviesList.getValueAt(selectedRow, 0).toString());
+       
+       // Display a confirmation dialog with Yes, No, and Cancel options
+        int choice = JOptionPane.showConfirmDialog(null, "Do you want delete this activity?",
+                                                   "Confirmation", JOptionPane.YES_NO_CANCEL_OPTION);
+        
+        // Check the user's choice and display a corresponding message
+        switch (choice) {
+            case JOptionPane.YES_OPTION ->{ // If the user chose 'Yes', show a message indicating that changes are saved
+                movieService.removeById(id);
+                JOptionPane.showMessageDialog(null, "Activity deleted successfully");
+            }
+            
+            default -> // If the user chose 'Cancel' or closed the dialog, show a message indicating the operation is canceled
+                JOptionPane.showMessageDialog(null, "Operation canceled.");
+        }
+        
+        
+        updateMovieList(this);
+        CleanSelected();
+
     }//GEN-LAST:event_DeletebtnActionPerformed
 
 //    MovieList on press a row 
@@ -199,29 +229,78 @@ public class VPrincipal extends javax.swing.JFrame {
         
         // Clear selection from MovieList
         finally{
-        CleanSelected();
+            updateMovieList(this);
+            CleanSelected();
         }
     }//GEN-LAST:event_AddbtnActionPerformed
 
+    private void updateMovieList(VPrincipal vPrincipal){
+        
+        // Get data from database
+        vPrincipal.movieListData = vPrincipal.movieService.getAll();
+        int amountOfElements = vPrincipal.movieListData.size();
+
+        
+        // Create table scheme
+        String[] rowTitle = { "ID", "Name", "Language", "Type", "Rate", "Date", "Note"};
+        Object[][] columnData = new Object[amountOfElements][];        
+        
+        for(int i=0; i<amountOfElements;i++){
+            columnData[i]= VPrincipal.MovieToVector(vPrincipal.movieListData.get(i));
+        }
+        
+        // Re-create Jtable and add it to JScrollPanel   
+        vPrincipal.MoviesList = new JTable( columnData, rowTitle); // Create Table
+        vPrincipal.MoviesList.setFont(new java.awt.Font("sansserif", 0, 14)); //Set font
+        vPrincipal.ScrollPanel.setViewportView(vPrincipal.MoviesList); // Set viewport
+        vPrincipal.setCellsAlignment(vPrincipal.MoviesList, SwingConstants.CENTER); // Center elements
+        
+        // Re-add Event listener
+        vPrincipal.MoviesList.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mousePressed(java.awt.event.MouseEvent evt) {
+                vPrincipal.MoviesListMousePressed(evt);
+            }
+        });
+    }
+    
+    public static String[] MovieToVector(Movie movie){
+        
+        String[] result = {
+            String.valueOf(movie.getId()), 
+            movie.getName(), 
+            movie.getLanguage(), 
+            movie.getType(), 
+            String.valueOf(movie.getRate()), 
+            movie.getWatchDate().toString(), 
+            movie.getNote()
+        };
+        return result;
+    }
+    
     private void EditbtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_EditbtnActionPerformed
         //  get selected row        
         int selectedRow = MoviesList.getSelectedRow(); 
+
         // get watchDate        
-        String baseDate = MoviesList.getValueAt(selectedRow, 6).toString();
+        String baseDate = MoviesList.getValueAt(selectedRow, 5).toString();
         int year =  Integer.parseInt(baseDate.split("-")[0]);
         int month =  Integer.parseInt(baseDate.split("-")[1]);
         int day =  Integer.parseInt(baseDate.split("-")[2]);
-                
-        // create Movie       
-        Movie m = new Movie(Integer.parseInt(MoviesList.getValueAt(selectedRow, 0).toString()), 
-                            MoviesList.getValueAt(selectedRow, 1).toString(),
-                            Float.parseFloat(MoviesList.getValueAt(selectedRow, 4).toString()),
-                            MoviesList.getValueAt(selectedRow, 3).toString(),
-                            MoviesList.getValueAt(selectedRow, 5).toString(),
-                            MoviesList.getValueAt(selectedRow, 2).toString(),
-                            LocalDate.of(year, month, day)
-        );
         
+        // create Movie   
+//                              0,   1,    2,    3,    4,    5,    6  
+//        Movie t = new Movie(id, name, rate, lang, note, Type, date)
+                            // id, name, lang, type, rate, date, note
+        Movie m = new Movie(
+                Integer.parseInt(MoviesList.getValueAt(selectedRow, 0).toString()), // Id
+                MoviesList.getValueAt(selectedRow, 1).toString(),
+                Float.parseFloat(MoviesList.getValueAt(selectedRow, 4).toString()),
+                MoviesList.getValueAt(selectedRow, 2).toString(),
+                MoviesList.getValueAt(selectedRow, 6).toString(),
+                MoviesList.getValueAt(selectedRow, 3).toString(),
+                LocalDate.of(year, month, day)
+        );
         
         try{
             this.addMovie = new VAddMovie(this, rootPaneCheckingEnabled, m);
@@ -232,7 +311,8 @@ public class VPrincipal extends javax.swing.JFrame {
         
         // Clear selection from MovieList
         finally{
-        CleanSelected();
+            updateMovieList(this);
+            CleanSelected();
         }
     }//GEN-LAST:event_EditbtnActionPerformed
 

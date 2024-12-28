@@ -25,9 +25,9 @@ public class MovieService implements Imovies {
     public void save(Movie movie) {
 
         session.beginTransaction();
-
-        session.persist(movie);
-
+        
+        session.merge(movie);
+        
         session.getTransaction().commit();
     }
 
@@ -57,11 +57,11 @@ public class MovieService implements Imovies {
         Optional<Movie> movie = getById(id);
 
         if (movie.isPresent()) {
-            // session.getTransaction().begin();
+            session.getTransaction().begin();
 
             session.remove(movie.get());
             
-            // session.getTransaction().commit();
+            session.getTransaction().commit();
 
             System.out.println("INFO: Deleted "+movie.toString());
         }else{

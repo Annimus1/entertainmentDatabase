@@ -9,6 +9,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 
 @Entity
@@ -18,7 +19,8 @@ import jakarta.persistence.Table;
 public class Movie {
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.SEQUENCE)
+        @SequenceGenerator(name="SequenceGenerator", allocationSize = 1, initialValue = 1)
+	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "SequenceGenerator")
 	@Column(name = "id")
 	private int id;
 

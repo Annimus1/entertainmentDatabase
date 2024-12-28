@@ -1,32 +1,38 @@
 package dev.pablo.view;
 
-import com.formdev.flatlaf.FlatLaf;
 import dev.pablo.model.Movie;
+import dev.pablo.services.MovieService;
 import java.awt.Color;
-import javax.swing.JPanel;
+import java.time.LocalDate;
 /**
  *
  * @author pablo
  */
 public class VAddMovie extends javax.swing.JDialog {
 
-    /**
-     * Creates new form VAddMovie
-     */
-    public VAddMovie(java.awt.Frame parent, boolean modal) {
+    MovieService movieService;
+    int id;
+    VPrincipal parent;
+    
+    public VAddMovie(VPrincipal parent, boolean modal) {
         super(parent, modal);
+        this.parent = parent;
+        this.movieService = new MovieService();
         initComponents();
+        
     }
     
     public VAddMovie(java.awt.Frame parent, boolean modal, Movie m) {
         super(parent, modal);
         initComponents();
-        nameImp.setText(m.getName());
-        languageInp.setSelectedItem(m.getLanguage());
-        typeInp.setSelectedItem(m.getType());
-        watchDateInp.setText(m.getWatchDate().toString());
-        rateInp.setText(String.valueOf(m.getRate()));
-        noteInp.setText(m.getNote());
+        this.movieService = new MovieService();
+        this.id = m.getId();
+        this.nameImp.setText(m.getName());
+        this.languageInp.setSelectedItem(m.getLanguage());
+        this.typeInp.setSelectedItem(m.getType());
+        this.watchDateInp.setText(m.getWatchDate().toString());
+        this.rateInp.setText(String.valueOf(m.getRate()));
+        this.noteInp.setText(m.getNote());
         
     }
 
@@ -113,6 +119,11 @@ public class VAddMovie extends javax.swing.JDialog {
 
         saveBtn.setFont(new java.awt.Font("JetBrains Mono", 0, 18)); // NOI18N
         saveBtn.setText("Save");
+        saveBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                saveBtnActionPerformed(evt);
+            }
+        });
 
         cancelBtn.setFont(new java.awt.Font("JetBrains Mono", 0, 18)); // NOI18N
         cancelBtn.setText("Cancel");
@@ -254,7 +265,103 @@ public class VAddMovie extends javax.swing.JDialog {
         }
 // si esta lleno, verificar la fecha y cambia color a negro
     }//GEN-LAST:event_watchDateInpFocusLost
+
+    private void saveBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveBtnActionPerformed
+        
+        // if validation is ok
+        if(validateSave()){
+           
+            if(this.id > 0){
+                Movie m = new Movie(
+                   this.id,
+                   nameImp.getText(), 
+                   Float.parseFloat(rateInp.getText()), 
+                   languageInp.getSelectedItem().toString(), 
+                   noteInp.getText(), 
+                   typeInp.getSelectedItem().toString(), 
+                   getDate(watchDateInp.getText()) 
+                );
+                
+                this.movieService.save(m);
+            }
+            else{
+                Movie m = new Movie(
+                   nameImp.getText(), 
+                   Float.parseFloat(rateInp.getText()), 
+                   languageInp.getSelectedItem().toString(), 
+                   noteInp.getText(), 
+                   typeInp.getSelectedItem().toString(), 
+                   getDate(watchDateInp.getText()) 
+                );
+            
+                this.movieService.save(m);
+            }
+           
+           // exit pop-up
+           this.dispose();           
+        }
+    }//GEN-LAST:event_saveBtnActionPerformed
     
+    
+    private boolean validateSave(){
+        int[] bg = {70, 73, 75};
+        int[] fg = {167, 167, 167};
+        
+        
+        nameImp.setBackground(new Color(bg[0],bg[1], bg[2]));
+        nameImp.setForeground(new Color(fg[0], fg[1], fg[2]));
+                
+        rateInp.setBackground(new Color(bg[0],bg[1], bg[2]));
+        rateInp.setForeground(new Color(fg[0], fg[1], fg[2]));
+                
+        watchDateInp.setBackground(new Color(bg[0],bg[1], bg[2]));
+        watchDateInp.setForeground(new Color(fg[0], fg[1], fg[2]));
+        
+        
+        
+        if(nameImp.getText().isBlank()){
+            nameImp.setBackground(Color.red);
+            nameImp.setForeground(Color.black);
+            return false;
+        }
+        
+        if(rateInp.getText().isBlank()){
+            rateInp.setBackground(Color.red);
+            rateInp.setForeground(Color.black);
+            return false;
+        }
+        
+        try{
+            Float.parseFloat(rateInp.getText());
+        }catch(Exception e){
+            rateInp.setBackground(Color.red);
+            rateInp.setForeground(Color.black);
+            return false;
+        }
+        
+        if(
+                watchDateInp.getText().isBlank() || 
+                watchDateInp.getText().equals( "YYYY-MM-DD" ) ||
+                watchDateInp.getText().equals("Invalid Format")
+            ){
+            watchDateInp.setBackground(Color.red);
+            watchDateInp.setForeground(Color.black);
+            return false;
+        }
+        return true;
+    }
+    
+    private LocalDate getDate(String dateString){
+        int year, month, day;
+        String splitedDate[] = dateString.split("-");
+        
+        year = Integer.parseInt(splitedDate[0]);
+        month = Integer.parseInt(splitedDate[1]);
+        day = Integer.parseInt(splitedDate[2]);
+        
+        
+        return LocalDate.of(year, month, day);
+    }
     
     private void validateDate(){
         int[] bg = {70, 73, 75};
